@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.1
+// @version     2.4.2
 // @updateURL   http://ed.apicrowd.org/ed/dev/FDevPosts.user.js
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @require     http://ed.apicrowd.org/ed/dev/js/opentip-jquery.js
@@ -321,6 +321,8 @@ function addSortListener() {
     // If column is different from previous sort (or is the first sort), do ascedning sort.
     if(state.sortcol == colIdx) {
       state.ascending = ! state.ascending;
+    } else {
+      state.ascending = true;
     }
     state.sortcol = colIdx;
 
