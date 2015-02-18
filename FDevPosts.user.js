@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.0
+// @version     2.4.1
 // @updateURL   http://ed.apicrowd.org/ed/dev/FDevPosts.user.js
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @require     http://ed.apicrowd.org/ed/dev/js/opentip-jquery.js
@@ -140,8 +140,10 @@ function render(posts) {
       tbody = getOrCreatePostsTable().find('tbody');
       $(html).appendTo(tbody);
       trigger('table.created');
+      trigger('table.ready');
+    } else {
+      trigger('table.empty');
     }
-    trigger('table.ready');
   }, createTableHTML, posts);
 }
 
@@ -218,7 +220,7 @@ function addCss(){
     return !!window.location.href.match(/[?&]f=29/);
   }
   var css = ''+
-    '#fdev-button { }'+
+    '#fdev-button.no-posts { opacity: 0.2; }'+
     'body.busy, body.busy * { cursor: progress !important; }'+
     '#dev-posts table { margin: 0 0.5em; }'+
     '#dev-posts th {font-weight: bold; line-height: 1.5em; position: relative; min-width: 9em; }'+
@@ -395,32 +397,48 @@ function addFilterListener() {
 
 // Add the clicky button that toggles showing and hiding of the dev posts
 function addDevPostsButton(){
-  $('<li><a id="fdev-button" href="activity.php" class="navtab">Dev Posts</a></li>')
+  var button = $('<li id="fdev-button"><a href="devposts.php" class="navtab">Dev Posts</a></li>')
   .appendTo('#navtabs')
   .click(function(evt){
-    var self  = $(this),
-        table = $('#dev-posts');
-
-    if( table.is(':visible') ) {              // If posts table is visible
-      $('#dev-posts').addClass('hidden');     // Hide it
-      self.removeClass('selected');
+    if( button.hasClass('no-posts') ) {
+      return evt.preventDefault();
+    }
+    if( $('#dev-posts').is(':visible') ) { // If posts table is visible
+      trigger('hide.posts');               // Hide it
     } else {
-      self.addClass('selected');
-      self.attr('disabled','true');           // Disable the button while table is constructed
-      setBusy(true);
-      on('table.ready', function() {
-        $('#dev-posts').removeClass('hidden');
-        self.removeAttr('disabled');          // Re-enable the button when done
-        setBusy(false);
-      });
-      on('table.created', function() {
-        addPreviewListener();
-        addFilterListener();
-        addSortListener();
-      });
-      fetchAndRenderMeta();
+      trigger('show.posts');
     }
     evt.preventDefault();
+  });
+
+  on('hide.posts', function(){
+    $('#dev-posts').addClass('hidden');
+    button.removeClass('selected');
+    $('#navtabs .selected-off').removeClass("selected-off")
+                                  .addClass("selected");
+  });
+  on('show.posts', function(){
+    $('#navtabs .selected').removeClass("selected")
+                              .addClass("selected-off");
+    button.addClass('selected');
+    setBusy(true);
+    fetchAndRenderMeta();
+  });
+  on('table.ready', function() {
+    var cPosts = $('#dev-posts tbody tr').length;
+    $('#dev-posts').removeClass('hidden');
+    button.attr('title',''+ cPosts +' post' + (cPosts > 1 ? 's' : '') );
+    setBusy(false);
+  });
+  on('table.empty', function() {
+    button.addClass('no-posts');
+    button.attr('title','No dev posts in here');
+    setBusy(false);
+  });
+  on('table.created', function() {
+    addPreviewListener();
+    addFilterListener();
+    addSortListener();
   });
 }
 
