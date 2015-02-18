@@ -3,10 +3,11 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.2
-// @updateURL   http://ed.apicrowd.org/ed/dev/FDevPosts.user.js
-// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
-// @require     http://ed.apicrowd.org/ed/dev/js/opentip-jquery.js
+// @version     2.4.3
+// @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
+// @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
+// @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
+// @require     https://raw.githubusercontent.com/enyo/opentip/9026591955d3042ae22e2eadb0a8c51a4610a2fd/downloads/opentip-jquery.js
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
