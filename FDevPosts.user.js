@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.3.0
+// @version     2.4.0
 // @updateURL   http://ed.apicrowd.org/ed/dev/FDevPosts.user.js
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @require     http://ed.apicrowd.org/ed/dev/js/opentip-jquery.js
@@ -218,7 +218,7 @@ function addCss(){
     return !!window.location.href.match(/[?&]f=29/);
   }
   var css = ''+
-    '#fdev-button { float: right; margin-right: 5em; margin-top: 0.2em; }'+
+    '#fdev-button { }'+
     'body.busy, body.busy * { cursor: progress !important; }'+
     '#dev-posts table { margin: 0 0.5em; }'+
     '#dev-posts th {font-weight: bold; line-height: 1.5em; position: relative; min-width: 9em; }'+
@@ -229,7 +229,8 @@ function addCss(){
     '#dev-posts { border: 1px dotted; padding: 0.6em; }'+
     '#dev-posts.hidden { display:none; }'+
     '#dev-posts td { padding-top: 0.2em; }'+
-    '#dev-posts .author { cursor: default; }'+
+    '#dev-posts .author { cursor: default; white-space: nowrap; }'+
+    '#dev-posts .forum a { white-space: nowrap; }'+
     '#dev-posts th span:after  { content: "\\2195"; font-size: 65%; left: 0.7em; opacity: 0.25; position: relative; top: -0.25em; }'+
     '#dev-posts th span:hover:after  { opacity: 1; }'+
     '#dev-posts th span { cursor: pointer; }'+
@@ -394,21 +395,21 @@ function addFilterListener() {
 
 // Add the clicky button that toggles showing and hiding of the dev posts
 function addDevPostsButton(){
-  $('<input type="button" id="fdev-button" value="Show Dev Posts">')
-  .insertAfter('#navtabs > ul > li:last')
-  .click(function(){
+  $('<li><a id="fdev-button" href="activity.php" class="navtab">Dev Posts</a></li>')
+  .appendTo('#navtabs')
+  .click(function(evt){
     var self  = $(this),
         table = $('#dev-posts');
 
     if( table.is(':visible') ) {              // If posts table is visible
       $('#dev-posts').addClass('hidden');     // Hide it
-      self.val('Show Dev Posts');             // Change the button title back to default
+      self.removeClass('selected');
     } else {
+      self.addClass('selected');
       self.attr('disabled','true');           // Disable the button while table is constructed
       setBusy(true);
       on('table.ready', function() {
         $('#dev-posts').removeClass('hidden');
-        self.val('Hide Dev Posts')            // Change the button text to reflect inverse operation
         self.removeAttr('disabled');          // Re-enable the button when done
         setBusy(false);
       });
@@ -419,6 +420,7 @@ function addDevPostsButton(){
       });
       fetchAndRenderMeta();
     }
+    evt.preventDefault();
   });
 }
 
