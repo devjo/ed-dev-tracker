@@ -93,7 +93,6 @@ function getOrCreatePostsTable() {
 
     $(html).appendTo(postsContainer);
     postsContainer.insertAfter(anchor);
-    trigger('table.created');
   }
   return postsContainer;
 }
@@ -140,6 +139,7 @@ function render(posts) {
     if(html.length > 0) {
       tbody = getOrCreatePostsTable().find('tbody');
       $(html).appendTo(tbody);
+      trigger('table.created');
     }
     trigger('table.ready');
   }, createTableHTML, posts);
