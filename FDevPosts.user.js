@@ -3,38 +3,17 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.3
+// @version     2.4.4
 // @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @require     https://raw.githubusercontent.com/enyo/opentip/9026591955d3042ae22e2eadb0a8c51a4610a2fd/downloads/opentip-jquery.js
-// @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
 function log(){
   var c = window.console || typeof(console) != "undefined" ? console : {};
   if(c.debug) c.debug.apply(c, arguments);
 }
-
-var get = (function(){
-  function get(url, callback, errorCb, responseProcessor) {
-    GM_xmlhttpRequest({
-      method: "GET",
-      url: url,
-      onerror: errorCb || (function(){}),
-      onload: function(response) {
-        callback(responseProcessor(response.responseText));
-      }
-    });
-  }
-  return {
-    json: function(url, callback, errorCb) {
-      get(url, callback, errorCb, function(responseText) {
-        return JSON.parse(responseText);
-      });
-    }
-  };
-})();
 
 function trigger() {
   var el = $('body');
@@ -132,9 +111,7 @@ function createTableHTML(posts) {
 
 // Renders a set of rows in the table, using the dev's role from the meta-info fetched previously
 function render(posts) {
-  if(window.webkitURL) {
-    posts.reverse();  // bug fix where FF and Chrome seem to sort differently
-  }
+  posts.reverse();              // Default sorting order is descending posting time 
   background(function(html) {
     var tbody;
     if(html.length > 0) {
@@ -157,13 +134,12 @@ function fetchAndRenderMeta() {
     trigger('table.ready');
     return
   }
-  get.json('http://ed.apicrowd.org/ed/dev/posts.json', function(o){
+  $.getJSON('https://ed.apicrowd.org/ed/dev/posts.json').success(function(o) {
     background(function(posts){
       render(posts);
     }, denormalize, [o, window.location.href]);
-  },
-  function(err){
-    log("Failed to get metadata: ", err);
+  }).fail(function(response){
+    log("Failed to get metadata, HTTP response code: ", response.status);
   });
 }
 
@@ -177,11 +153,11 @@ function denormalize(args) {
       posts = [], post, m,
       curForumId, curThreadId;
 
-  if(m=currentPageUrl.match(/[?&]f=(\d+)/)) {
+  if (m=currentPageUrl.match(/forumdisplay.php\/(\d+)/)) {
     curForumId = parseInt(m[1],10);
-  }
-  if(m=currentPageUrl.match(/[?&]t=(\d+)/)) {
+  } else if(m=currentPageUrl.match(/showthread.php\/(\d+)[^\d]+(\d+)/)) {
     curThreadId = parseInt(m[1],10);
+    curForumId = parseInt(m[2],10);
   }
 
   for(pid in o['posts']) {
@@ -403,6 +379,7 @@ function addDevPostsButton(){
   var button = $('<li id="fdev-button"><a href="devposts.php" class="navtab">Dev Posts</a></li>')
   .appendTo('#navtabs')
   .click(function(evt){
+    evt.preventDefault();
     if( button.hasClass('no-posts') ) {
       return evt.preventDefault();
     }
@@ -411,7 +388,6 @@ function addDevPostsButton(){
     } else {
       trigger('show.posts');
     }
-    evt.preventDefault();
   });
 
   on('hide.posts', function(){
