@@ -111,18 +111,17 @@ function createTableHTML(posts) {
 
 // Renders a set of rows in the table, using the dev's role from the meta-info fetched previously
 function render(posts) {
-  posts.reverse();              // Default sorting order is descending posting time 
-  background(function(html) {
-    var tbody;
-    if(html.length > 0) {
-      tbody = getOrCreatePostsTable().find('tbody');
-      $(html).appendTo(tbody);
-      trigger('table.created');
-      trigger('table.ready');
-    } else {
-      trigger('table.empty');
-    }
-  }, createTableHTML, posts);
+  posts.reverse();              // Default sorting order is descending posting time
+  var html = createTableHTML(posts),
+      body;
+  if(html.length > 0) {
+    tbody = getOrCreatePostsTable().find('tbody');
+    $(html).appendTo(tbody);
+    trigger('table.created');
+    trigger('table.ready');
+  } else {
+    trigger('table.empty');
+  }
 }
 
 function fetchAndRenderMeta() {
@@ -134,10 +133,9 @@ function fetchAndRenderMeta() {
     trigger('table.ready');
     return
   }
-  $.getJSON('https://ed.apicrowd.org/ed/dev/posts.json').success(function(o) {
-    background(function(posts){
-      render(posts);
-    }, denormalize, [o, window.location.href]);
+  $.getJSON('https://ed.apicrowd.org/ed/dev/posts.json').then(function(o) {
+    var posts = denormalize(o, window.location.href);
+    render(posts);
   }).fail(function(response){
     log("Failed to get metadata, HTTP response code: ", response.status);
   });
@@ -147,10 +145,8 @@ function fetchAndRenderMeta() {
 // into a format more apt to the domain application.
 // It filters the posts to only those applicable to the user's currently viewed
 // page (thread page or forum page)
-function denormalize(args) {
-  var o = args[0],
-      currentPageUrl = args[1],
-      posts = [], post, m,
+function denormalize(o, currentPageUrl) {
+  var posts = [], post, m, pid,
       curForumId, curThreadId;
 
   if (m=currentPageUrl.match(/forumdisplay.php\?f=(\d+)/)) {
@@ -180,21 +176,6 @@ function denormalize(args) {
     posts.push(post);
   }
   return posts;
-}
-
-// Converts a JSON string to object, by using a background thread (webworker) for browsers that support it
-// Executes function func in a webworker (in background) if the browser support
-// web browsers, and returns the result to the callback function as the first argument
-function background(callback, func, args) {
-  var code = 'onmessage = function(e){ var res = ('+ func.toString() +')(e.data); postMessage(res); };',
-      url = URL.createObjectURL( new Blob([code], {type: 'text/javascript'}) ),
-      worker = new Worker(url);
-
-  worker.onmessage = function(e){
-    log('result received from worker');
-    callback(e.data);
-  }
-  worker.postMessage(args);
 }
 
 // Add some styling to the posts table and the button
