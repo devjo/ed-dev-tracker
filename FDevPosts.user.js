@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.6
+// @version     2.4.7
 // @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
@@ -113,7 +113,7 @@ function createTableHTML(posts) {
 function render(posts) {
   posts.reverse();              // Default sorting order is descending posting time
   var html = createTableHTML(posts),
-      body;
+      tbody;
   if(html.length > 0) {
     tbody = getOrCreatePostsTable().find('tbody');
     $(html).appendTo(tbody);
