@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.7
+// @version     2.4.8
 // @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
@@ -149,17 +149,16 @@ function denormalize(o, currentPageUrl) {
   var posts = [], post, m, pid,
       curForumId, curThreadId;
 
-  if (m=currentPageUrl.match(/forumdisplay.php\?f=(\d+)/)) {
-    curForumId = +m[1];
-  } else if(m=currentPageUrl.match(/showthread.php\?t=(\d+)/)) {
-    curThreadId = +m[1];
-    curForumId = +$('.lastnavbit')
-        .prev('li')
-        .find('a')
-        .get()
-        .map(function(a){ return a.href })
-        .map(function(s){ return /f=(\d+)/.test(s) ? RegExp.$1  : '' })
-        .filter(function(v){ return v })[0];
+  // Frontier seems to flip-flop betweeen two format for URLs. Likely some backend
+  // servers configured differently when they should be the same.
+  // So need to support both formats.
+  // Format #1: https://forums.frontier.co.uk/forumdisplay.php/29-Elite-Dangerous
+  // Format #2: https://forums.frontier.co.uk/forumdisplay.php?f=29
+  if (m=currentPageUrl.match(/forumdisplay.php(\/|\?f=)(\d+)/)) {
+    curForumId = +m[2];
+  } 
+  else if(m=currentPageUrl.match(/showthread.php(\/|\?f=)(\d+)/)) {
+    curThreadId = +m[2];
   }
 
   for(pid in o['posts']) {
