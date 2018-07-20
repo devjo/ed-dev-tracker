@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.5
+// @version     2.4.6
 // @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
