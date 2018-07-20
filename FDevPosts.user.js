@@ -153,11 +153,17 @@ function denormalize(args) {
       posts = [], post, m,
       curForumId, curThreadId;
 
-  if (m=currentPageUrl.match(/forumdisplay.php\/(\d+)/)) {
-    curForumId = parseInt(m[1],10);
-  } else if(m=currentPageUrl.match(/showthread.php\/(\d+)[^\d]+(\d+)/)) {
-    curThreadId = parseInt(m[1],10);
-    curForumId = parseInt(m[2],10);
+  if (m=currentPageUrl.match(/forumdisplay.php\?f=(\d+)/)) {
+    curForumId = +m[1];
+  } else if(m=currentPageUrl.match(/showthread.php\?t=(\d+)/)) {
+    curThreadId = +m[1];
+    curForumId = +$('.lastnavbit')
+        .prev('li')
+        .find('a')
+        .get()
+        .map(function(a){ return a.href })
+        .map(function(s){ return /f=(\d+)/.test(s) ? RegExp.$1  : '' })
+        .filter(function(v){ return v })[0];
   }
 
   for(pid in o['posts']) {
@@ -293,7 +299,7 @@ function addSortListener() {
 
   $('#dev-posts th span').click(function(evt){
     var header = $(evt.target).closest('th')[0], sort,
-        colIdx = getColumnIndex(header);
+        colIdx = getColumnIndex(header),
         state  = $('#dev-posts').data('sort-state') || {sortcol: null, ascending: true};
 
     // Make it so that sorting is only reversed if the column clicked was the same as the column last clicked.
