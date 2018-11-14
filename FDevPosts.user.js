@@ -88,7 +88,7 @@ function createTableHTML(posts) {
         d  = pad( dt.getDate() ),
         h  = pad( dt.getHours() ),
         mi = pad( dt.getMinutes() );
-    return y +'-'+ m +'-'+ d +' '+ h +':'+ mi
+    return y +'-'+ m +'-'+ d +' '+ h +':'+ mi;
   }
 
   var html  = '';
@@ -131,7 +131,7 @@ function fetchAndRenderMeta() {
 
   if( alreadyRendered() ) {
     trigger('table.ready');
-    return
+    return;
   }
   $.getJSON('https://ed.apicrowd.org/ed/dev/posts.json').then(function(o) {
     var posts = denormalize(o, window.location.href);
@@ -156,7 +156,7 @@ function denormalize(o, currentPageUrl) {
   // Format #2: https://forums.frontier.co.uk/forumdisplay.php?f=29
   if (m=currentPageUrl.match(/forumdisplay.php(\/|\?f=)(\d+)/)) {
     curForumId = +m[2];
-  } 
+  }
   else if(m=currentPageUrl.match(/showthread.php(\/|\?f=)(\d+)/)) {
     curThreadId = +m[2];
   }
@@ -241,7 +241,7 @@ function addPreviewListener() {
       // Add required forum style class to fix the text color.
       return '<div class=".postrow">'+ html +'</div>';
     });
-  }
+  };
 
   Opentip.styles.tag = {
     ajax: true,             // The URL to download will be taken from the href attribute
@@ -338,8 +338,8 @@ function addFilterListener() {
       if (keycodes.indexOf(evt.keyCode) >= 0) return;
       var filter = $(this).val().toLowerCase().trim();
 
-      if(filter.length == 0) header.removeClass('filtered')
-      else header.addClass('filtered')
+      if(filter.length == 0) header.removeClass('filtered');
+      else header.addClass('filtered');
 
       clearTimeout(timer);
       timer = slowOperation(function(){       // The operation can be slow with lots of rows, so
