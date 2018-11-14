@@ -3,12 +3,14 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.8
+// @version     2.4.9
 // @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @require     https://raw.githubusercontent.com/enyo/opentip/9026591955d3042ae22e2eadb0a8c51a4610a2fd/downloads/opentip-jquery.js
 // ==/UserScript==
+
+const DATA_URL = 'https://ed.nuz.se/ed/dev/posts.json';
 
 function log(){
   var c = window.console || typeof(console) != "undefined" ? console : {};
@@ -133,7 +135,7 @@ function fetchAndRenderMeta() {
     trigger('table.ready');
     return;
   }
-  $.getJSON('https://ed.apicrowd.org/ed/dev/posts.json').then(function(o) {
+  $.getJSON(DATA_URL).then(function(o) {
     var posts = denormalize(o, window.location.href);
     render(posts);
   }).fail(function(response){
