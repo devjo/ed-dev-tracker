@@ -3,7 +3,7 @@
 // @namespace   jojje/gm
 // @include     http://forums.frontier.co.uk/*
 // @include     https://forums.frontier.co.uk/*
-// @version     2.4.9
+// @version     2.5.0
 // @downloadURL https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @updateURL   https://raw.githubusercontent.com/devjo/ed-dev-tracker/master/FDevPosts.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
@@ -11,6 +11,22 @@
 // ==/UserScript==
 
 const DATA_URL = 'https://ed.nuz.se/ed/dev/posts.json';
+const CACHE = {};
+
+// User preferences
+const PREFS = (function() {
+  const SHOW_MAX_KEY = 'show-max-items';
+  return {
+    getShowPostsLimit: function() {
+	  return +(localStorage.getItem(SHOW_MAX_KEY) || 100);
+	},
+    setShowPostsLimit: function(value) {
+	  localStorage.setItem(SHOW_MAX_KEY, value);
+	  console.debug("Updated max dev posts prefs:", value);
+	  trigger('max-posts-changed');
+	}
+  };
+}());
 
 function log(){
   var c = window.console || typeof(console) != "undefined" ? console : {};
@@ -113,9 +129,18 @@ function createTableHTML(posts) {
 
 // Renders a set of rows in the table, using the dev's role from the meta-info fetched previously
 function render(posts) {
-  posts.reverse();              // Default sorting order is descending posting time
+  posts = posts || CACHE.posts;
+
+  // Show some posts to speed up browser rendering, unless user has explicitly chosen to see all.
+  const showLimit = PREFS.getShowPostsLimit();
+  if(showLimit) {
+    posts = posts.slice(0, showLimit);
+  }
+  $('#dev-posts').remove();
+
   var html = createTableHTML(posts),
       tbody;
+
   if(html.length > 0) {
     tbody = getOrCreatePostsTable().find('tbody');
     $(html).appendTo(tbody);
@@ -137,6 +162,8 @@ function fetchAndRenderMeta() {
   }
   $.getJSON(DATA_URL).then(function(o) {
     var posts = denormalize(o, window.location.href);
+	posts.reverse();              // Default sorting order is descending posting time
+	CACHE.posts = posts;
     render(posts);
   }).fail(function(response){
     log("Failed to get metadata, HTTP response code: ", response.status);
@@ -186,6 +213,8 @@ function addCss(){
   }
   var css = ''+
     '#fdev-button.no-posts { opacity: 0.2; }'+
+	'#fdev-ctrl { padding-top:5px; padding-left:6px; }'+
+    '#fdev-ctrl > label { position:relative; margin-right:6px; top:-2px; }'+
     'body.busy, body.busy * { cursor: progress !important; }'+
     '#dev-posts table { margin: 0 0.5em; }'+
     '#dev-posts th {font-weight: bold; line-height: 1.5em; position: relative; min-width: 9em; }'+
@@ -411,6 +440,35 @@ function addDevPostsButton(){
   });
 }
 
+// Add preference control to allow user to choose whether to show a subset of posts or not.
+function addPrefsControl() {
+  const ctrlFilter = '#fdev-ctrl input[type="radio"]';
+  const html =
+    '<li id="fdev-ctrl" title="Maximum number of posts to display">' +
+    '  <input type="radio" name="max-posts" value="100">' +
+    '  <label for="radio-some">100</label>' +
+    '  <input type="radio" name="max-posts" value="0">' +
+    '  <label for="radio-all">all</label>' +
+    '</li>';
+
+  $(html).insertAfter('#fdev-button');
+
+  $(ctrlFilter).on('change', function() {
+	const value = +$(ctrlFilter + ':checked').val();
+	PREFS.setShowPostsLimit(value);
+  });
+
+  on('max-posts-changed', function() {
+    if($('#dev-posts:visible')[0]) {
+	  render();
+	}
+  });
+
+  // Set initial checkbox tick state, based on user pref or default.
+  document.querySelector(ctrlFilter + '[value="'+ PREFS.getShowPostsLimit() +'"]').checked = true;
+  console.debug('initialized fdev post controls');
+}
+
 function isAppropriatePageForButton() {
   return window.location.pathname.match(/^\/(forumdisplay|showthread)\.php/);
 }
@@ -418,4 +476,5 @@ function isAppropriatePageForButton() {
 if( isAppropriatePageForButton() ) {
   addCss();
   addDevPostsButton();
+  addPrefsControl();
 }
